@@ -1,0 +1,10 @@
+rax_credentials_file: "./creds_file/.raxpub"
+rax_region: IAD
+rax_wait_timeout: 7200
+cs_group: csgroup
+cs_name: csname
+cs_flavor: performance1-2
+cs_image: ac865ab1-f649-43f2-b1f2-2c56af106886
+cs_ssh_key: "/root/.ssh/id_rsa.pub"
+cs_count: 1
+cs_count_offset: 1

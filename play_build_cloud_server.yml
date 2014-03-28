@@ -1,0 +1,42 @@
+---
+- name: Build a Cloud Server
+  hosts: local
+  vars_files: 
+    - ./group_vars/all.yml
+
+  gather_facts: False
+  tasks:
+    - name: Server build request
+      local_action:
+        module: rax
+        credentials: "{{ rax_credentials_file }}"
+        region: "{{ rax_region }}"
+        name: "{{ cs_name }}"
+        flavor: "{{ cs_flavor }}"
+        image: "{{ cs_image }}"
+        files:
+          /root/.ssh/authorized_keys: "{{ cs_ssh_key }}"
+        wait: no
+        wait_timeout: "{{ rax_wait_timeout }}"
+        state: present
+        count: "{{ cs_count }}"
+        count_offset: "{{ cs_count_offset }}"
+        exact_count: yes
+        group: "{{ cs_group }}"
+        networks:
+          - private
+          - public
+      register: rax
+
+    - name: Add the instances we created (by public IP) to the group 'raxhosts'
+      local_action:
+        module: add_host
+        hostname: "{{ item.name }}"
+        debug: var=item.name
+        ansible_ssh_host: "{{ item.rax_accessipv4 }}"
+        debug: var=item.rax_accessipv4
+        ansible_ssh_pass: "{{ item.rax_adminpass }}"
+        debug: msg="{{ item.rax_adminpass }}"
+        groupname: raxhosts
+      with_items: rax.success
+      when: rax.action == 'create'
